@@ -1,34 +1,115 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-network-wired me-2 text-primary"></i> Proxy Manager</h2>
-    <div>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-network-wired me-2 text-primary"></i> Proxy Manager</h2>
+    </div>
+    <div class="col-md-6 text-end">
         <form action="{{ url_for('proxy.restart_proxy') }}" method="POST" class="d-inline">
             <button type="submit" class="btn btn-warning"
                 onclick="return confirm('Restarting the proxy will interrupt active streams. Continue?')">
                 <i class="fas fa-sync-alt me-1"></i> Restart Proxy
             </button>
         </form>
-        <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#addRouteModal">
-            <i class="fas fa-plus me-1"></i> Add Route
-        </button>
+    </div>
+</div>
+
+<!-- Webshare Dashboard -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card h-100 border-primary">
+            <div class="card-header bg-transparent border-primary d-flex justify-content-between">
+                <h5 class="mb-0 text-primary"><i class="fas fa-globe me-2"></i>Webshare Pool</h5>
+                <form action="{{ url_for('proxy.sync_proxies') }}" method="POST">
+                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-sync"></i> Sync</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between text-center mb-3">
+                    <div>
+                        <h3>{{ total_proxies }}</h3>
+                        <small class="text-muted">Total</small>
+                    </div>
+                    <div>
+                        <h3 class="text-success">{{ active_proxies }}</h3>
+                        <small class="text-muted">Active</small>
+                    </div>
+                    <div>
+                        <h3 class="text-danger">{{ total_proxies - active_proxies }}</h3>
+                        <small class="text-muted">Dead</small>
+                    </div>
+                </div>
+                <hr>
+                <h6>Region Distribution</h6>
+                <div style="max-height: 100px; overflow-y: auto;">
+                    {% for country, count in country_stats %}
+                    <div class="d-flex justify-content-between small">
+                        <span><img src="https://flagcdn.com/16x12/{{ country|lower }}.png" alt="{{ country }}"> {{
+                            country }}</span>
+                        <span class="badge bg-secondary">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-key me-2"></i>API Keys</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('proxy.manage_keys') }}" method="POST" class="row g-2 mb-3">
+                    <input type="hidden" name="action" value="add">
+                    <div class="col-auto flex-grow-1">
+                        <input type="text" name="key" class="form-control" placeholder="Enter Webshare API Key"
+                            required>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Add Key</button>
+                    </div>
+                </form>
+
+                <div class="list-group">
+                    {% for key in api_keys %}
+                    <div
+                        class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
+                        <small class="text-monospace">{{ key[:10] }}...{{ key[-5:] }}</small>
+                        <form action="{{ url_for('proxy.manage_keys') }}" method="POST">
+                            <input type="hidden" name="action" value="remove">
+                            <input type="hidden" name="key" value="{{ key }}">
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-2">No API keys configured.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-route me-2"></i>Route Configuration</h5>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addRouteModal">
+            <i class="fas fa-plus me-1"></i> Add Route
+        </button>
+    </div>
     <div class="card-body p-0">
         <div class="alert alert-info m-3">
-            <i class="fas fa-info-circle me-2"></i> Only routes explicitly defined in <code>docker-compose.yml</code>
-            are shown here.
+            <i class="fas fa-info-circle me-2"></i> Routes defined in <code>docker-compose.yml</code>
         </div>
 
         <table class="table table-hover mb-0">
             <thead>
                 <tr>
-                    <th>Pattern <small class="text-muted">(Domain/URL)</small></th>
+                    <th>Pattern</th>
                     <th>Proxy URL</th>
-                    <th>SSL Verification</th>
+                    <th>Verified SSL</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -38,31 +119,31 @@
                     <td><code>{{ pattern }}</code></td>
                     <td>
                         {% if config.proxy_url %}
-                        <span class="badge bg-primary text-dark">{{ config.proxy_url }}</span>
+                        <span class="text-truncate d-inline-block" style="max-width: 300px;">
+                            {{ config.proxy_url }}
+                        </span>
                         {% else %}
                         <span class="badge bg-secondary">Default</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if config.verify_ssl %}
-                        <i class="fas fa-check-circle text-success"></i> Enabled
+                        <i class="fas fa-check text-success"></i>
                         {% else %}
-                        <i class="fas fa-times-circle text-danger"></i> Disabled
+                        <i class="fas fa-times text-danger"></i>
                         {% endif %}
                     </td>
                     <td class="text-end">
                         <form action="{{ url_for('proxy.delete_route') }}" method="POST" class="d-inline"
-                            onsubmit="return confirm('Delete route for {{ pattern }}?');">
+                            onsubmit="return confirm('Delete route?');">
                             <input type="hidden" name="pattern" value="{{ pattern }}">
-                            <button class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-muted">No custom routes configured.</td>
+                    <td colspan="4" class="text-center py-3">No routes.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -72,7 +153,7 @@
 
 <!-- Add Route Modal -->
 <div class="modal fade" id="addRouteModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content bg-dark text-white border-secondary">
             <div class="modal-header border-secondary">
                 <h5 class="modal-title">New Proxy Route</h5>
@@ -84,15 +165,32 @@
                         <label>Pattern</label>
                         <input type="text" name="pattern" class="form-control" placeholder="e.g. all://*.example.com"
                             required>
-                        <small class="text-muted">Supports <code>http://domain</code>, <code>all://wildcard</code>,
-                            etc.</small>
                     </div>
+
                     <div class="mb-3">
-                        <label>Proxy URL (Optional)</label>
-                        <input type="text" name="proxy_url" class="form-control"
-                            placeholder="socks5://user:pass@host:1080">
-                        <small class="text-muted">Leave empty to use main proxy or disable proxy for this route.</small>
+                        <label>Proxy Configuration</label>
+                        <div class="input-group">
+                            <input type="text" name="proxy_url" id="proxyUrlInput" class="form-control"
+                                placeholder="socks5://...">
+                            <button class="btn btn-outline-info" type="button" id="fetchProxyBtn"
+                                onclick="fetchBestProxy()">
+                                <i class="fas fa-magic me-1"></i> Auto-Fill from Webshare
+                            </button>
+                        </div>
+                        <div id="proxyFeedback" class="form-text"></div>
                     </div>
+
+                    <div class="mb-3">
+                        <label>Prefer Region (for Auto-Fill)</label>
+                        <select id="regionSelect" class="form-select">
+                            <option value="">Best Available (Recommended)</option>
+                            <option value="GB">United Kingdom (GB)</option>
+                            <option value="US">United States (US)</option>
+                            <option value="DE">Germany (DE)</option>
+                            <option value="FR">France (FR)</option>
+                        </select>
+                    </div>
+
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" name="verify_ssl" id="verify_ssl" checked>
                         <label class="form-check-label" for="verify_ssl">Verify SSL Certificates</label>
@@ -106,4 +204,33 @@
         </div>
     </div>
 </div>
+
+<script>
+    function fetchBestProxy() {
+        const country = document.getElementById('regionSelect').value;
+        const btn = document.getElementById('fetchProxyBtn');
+        const input = document.getElementById('proxyUrlInput');
+        const feedback = document.getElementById('proxyFeedback');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+
+        fetch(`{{ url_for('proxy.get_best_proxy') }}?country=${country}`)
+            .then(response => {
+                if (!response.ok) throw new Error("No proxy found");
+                return response.json();
+            })
+            .then(data => {
+                input.value = data.url;
+                feedback.innerHTML = `<span class="text-success"><i class="fas fa-check"></i> Found active proxy in <strong>${data.country}</strong></span>`;
+            })
+            .catch(err => {
+                feedback.innerHTML = `<span class="text-danger"><i class="fas fa-times"></i> ${err.message}. Try syncing first?</span>`;
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic me-1"></i> Auto-Fill from Webshare';
+            });
+    }
+</script>
 {% endblock %}

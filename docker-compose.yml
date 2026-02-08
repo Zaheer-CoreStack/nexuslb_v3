@@ -8,7 +8,10 @@ services:
     environment:
       API_PASSWORD: mfp
       FORWARDED_ALLOW_IPS: '*'
-      TRANSPORT_ROUTES: '{}'
+      TRANSPORT_ROUTES: '{"all://*": {"proxy_url": "socks5://hwutxexq:jtv8gehl2o17@31.59.20.176:6754",
+        "verify_ssl": true, "proxy": true}}'
+    volumes:
+    - ./mfp_config.env:/mediaflow_proxy/.env:rw
     networks:
     - nexuslb-network
   lb:
@@ -34,6 +37,7 @@ services:
     - panel-db:/instance
     - /var/run/docker.sock:/var/run/docker.sock
     - ./docker-compose.yml:/config/docker-compose.yml
+    - ./mfp_config.env:/config/mfp_config.env:rw
     environment:
     - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
     - HTPASSWD_FILE=/auth/.htpasswd

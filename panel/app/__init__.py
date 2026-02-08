@@ -49,4 +49,25 @@ def create_app():
             db.session.add(default_admin)
             db.session.commit()
 
+    # Scheduler for Webshare Sync
+    from flask_apscheduler import APScheduler
+    scheduler = APScheduler()
+    app.config['SCHEDULER_API_ENABLED'] = True
+    scheduler.init_app(app)
+    
+    from .services.webshare import WebshareService
+
+    @scheduler.task('interval', id='sync_webshare_proxies', hours=24)
+    def active_proxy_sync():
+        with app.app_context():
+            try:
+                # Sync logic here
+                print("Running daily proxy sync...")
+                WebshareService.sync_proxies()
+                print("Daily proxy sync completed.")
+            except Exception as e:
+                print(f"Error in daily proxy sync: {e}")
+
+    scheduler.start()
+
     return app

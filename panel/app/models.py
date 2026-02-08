@@ -31,3 +31,24 @@ class Playlist(db.Model):
     status = db.Column(db.String(20), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     notes = db.Column(db.Text, nullable=True)
+
+class Settings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), unique=True, nullable=False)
+    value = db.Column(db.Text, nullable=True)
+
+class ProxyPool(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip = db.Column(db.String(45), nullable=False)
+    port = db.Column(db.Integer, nullable=False)
+    username = db.Column(db.String(80), nullable=True)
+    password = db.Column(db.String(80), nullable=True)
+    country_code = db.Column(db.String(5), nullable=True) # GB, US, etc.
+    protocol = db.Column(db.String(10), default='socks5')
+    status = db.Column(db.String(20), default='active') # active, dead, checking
+    last_checked = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_proxy_url(self):
+        auth = f"{self.username}:{self.password}@" if self.username else ""
+        return f"{self.protocol}://{auth}{self.ip}:{self.port}"
