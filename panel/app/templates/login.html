@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login | NexusLB</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Theme -->
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="card login-card shadow-lg slide-up" style="max-width: 400px; width: 100%;">
+            <div class="login-card-body">
+                <h3 class="text-center mb-4">Nexus<span class="text-primary">LB</span> <small
+                        class="text-muted d-block fs-6 mt-1">Command Center</small></h3>
+
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <div class="alert alert-danger fade-in">{{ messages[0] }}</div>
+                {% endif %}
+                {% endwith %}
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-user"></i></span>
+                            <input type="text" name="username" class="form-control" required
+                                placeholder="Enter username">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-lock"></i></span>
+                            <input type="password" name="password" class="form-control" required
+                                placeholder="Enter password">
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                        <label class="form-check-label text-muted" for="remember">Remember me</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

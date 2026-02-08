@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-light"><i class="fas fa-users me-2 text-primary"></i> User Management</h2>
+        <button class="btn btn-primary shadow" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="fas fa-plus me-2"></i> Add User
+        </button>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Username</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-dark d-flex align-items-center justify-content-center me-3"
+                                        style="width: 35px; height: 35px;">
+                                        <i class="fas fa-user text-secondary"></i>
+                                    </div>
+                                    {{ user.username }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if user.status == 'active' %}
+                                <span
+                                    class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                                    <span class="status-dot status-active"></span> Active
+                                </span>
+                                {% else %}
+                                <span
+                                    class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 rounded-pill">
+                                    <span class="status-dot status-inactive"></span> Disabled
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.notes %}
+                                <span class="text-muted"><i class="fas fa-sticky-note me-1"></i> {{ user.notes }}</span>
+                                {% else %}
+                                <span class="text-muted opacity-50 fst-italic">No notes</span>
+                                {% endif %}
+                                {% if user.expires_at %}
+                                <div class="mt-1">
+                                    <small class="text-info"><i class="fas fa-clock me-1"></i> {{
+                                        user.expires_at.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-info"
+                                        onclick="openConnectModal('{{ user.username }}')" title="Connection Info">
+                                        <i class="fas fa-link"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary"
+                                        onclick="openEditModal('{{ user.id }}', '{{ user.username }}', '{{ user.notes or '' }}', '{{ user.expires_at.strftime('%Y-%m-%d') if user.expires_at else '' }}')"
+                                        title="Edit User">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                                <form action="{{ url_for('users.toggle_status', id=user.id) }}" method="POST"
+                                    class="d-inline">
+                                    <button
+                                        class="btn btn-sm btn-outline-{{ 'warning' if user.status == 'active' else 'success' }} me-1"
+                                        title="{{ 'Disable User' if user.status == 'active' else 'Enable User' }}">
+                                        <i
+                                            class="fas fa-{{ 'ban' if user.status == 'active' else 'check-circle' }}"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('users.delete_user', id=user.id) }}" method="POST"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Delete user {{user.username}}? This action cannot be undone.');">
+                                    <button class="btn btn-sm btn-outline-danger" title="Delete User">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-users-slash fa-3x mb-3 opacity-50"></i>
+                                <p class="mb-0">No users found. Start by creating one!</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border-secondary text-white">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2 text-primary"></i> New User</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('users.add_user') }}" method="POST">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-user"></i></span>
+                            <input type="text" name="username" class="form-control" required autocomplete="off"
+                                placeholder="e.g. john_doe">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-key"></i></span>
+                            <input type="text" name="password" class="form-control" required
+                                placeholder="Generate or type password">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Notes (Optional)</label>
+                        <textarea name="notes" class="form-control" rows="3"
+                            placeholder="e.g. Subscription expires Dec 2025"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Expiry Date</label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-calendar-alt"></i></span>
+                            <input type="date" name="expiry_date" id="expiryDateInput" class="form-control">
+                        </div>
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setExpiry(1)">1
+                                Mo</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setExpiry(3)">3
+                                Mo</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setExpiry(6)">6
+                                Mo</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setExpiry(12)">1
+                                Yr</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                onclick="setExpiry('unlimited')">Unlimited</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border-secondary text-white">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title"><i class="fas fa-user-edit me-2 text-primary"></i> Edit User</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm" method="POST">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="expiry_cleared" id="editExpiryCleared" value="false">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-user"></i></span>
+                            <input type="text" name="username" id="editUsername" class="form-control" required
+                                autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Password <small
+                                class="text-muted">(Leave blank to keep current)</small></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-key"></i></span>
+                            <input type="text" name="password" class="form-control" placeholder="New password">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Notes</label>
+                        <textarea name="notes" id="editNotes" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Expiry Date</label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-calendar-alt"></i></span>
+                            <input type="date" name="expiry_date" id="editExpiryDate" class="form-control">
+                        </div>
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setEditExpiry(1)">1
+                                Mo</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setEditExpiry(3)">3
+                                Mo</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setEditExpiry(6)">6
+                                Mo</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setEditExpiry(12)">1
+                                Yr</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                onclick="setEditExpiry('unlimited')">Unlimited</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Connection Details Modal -->
+<div class="modal fade" id="connectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card border-secondary text-white">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title"><i class="fas fa-link me-2 text-info"></i> Connection Information</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-4">Give these details to your client/user to connect to the stream.</p>
+
+                <h6 class="text-uppercase text-primary fw-bold mb-3 small">M3U Playlist URL</h6>
+                <div class="input-group mb-4">
+                    <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                            class="fas fa-globe"></i></span>
+                    <input type="text" id="m3uUrl" class="form-control font-monospace" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('m3uUrl')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <h6 class="text-uppercase text-primary fw-bold mb-3 small">Xtream Codes Login</h6>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label text-muted small">Host URL</label>
+                        <div class="input-group">
+                            <input type="text" id="xcHost" class="form-control font-monospace" readonly>
+                            <button class="btn btn-outline-secondary" type="button"
+                                onclick="copyToClipboard('xcHost')"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small">Port</label>
+                        <input type="text" value="80" class="form-control font-monospace" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Username</label>
+                        <div class="input-group">
+                            <input type="text" id="xcUser" class="form-control font-monospace" readonly>
+                            <button class="btn btn-outline-secondary" type="button"
+                                onclick="copyToClipboard('xcUser')"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Password</label>
+                        <div class="input-group">
+                            <input type="text" value="******" class="form-control font-monospace text-muted" readonly>
+                            <span class="input-group-text bg-dark border-secondary text-muted small">Hidden</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Added User Expiry Logic
+    function setExpiry(months) {
+        const input = document.getElementById('expiryDateInput');
+        if (months === 'unlimited') {
+            input.value = '';
+            return;
+        }
+        const date = new Date();
+        date.setMonth(date.getMonth() + months);
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        input.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    // New Edit User Expiry Logic
+    function setEditExpiry(months) {
+        const input = document.getElementById('editExpiryDate');
+        document.getElementById('editExpiryCleared').value = (months === 'unlimited') ? 'true' : 'false';
+
+        if (months === 'unlimited') {
+            input.value = '';
+            return;
+        }
+        const date = new Date();
+        date.setMonth(date.getMonth() + months);
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        input.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function openEditModal(id, username, notes, expiry) {
+        document.getElementById('editUserForm').action = `/panel/users/edit/${id}`;
+        document.getElementById('editUsername').value = username;
+        document.getElementById('editNotes').value = notes;
+
+        // Handle Expiry
+        const expiryInput = document.getElementById('editExpiryDate');
+        if (expiry && expiry !== 'None') {
+            // expiry format expected: YYYY-MM-DD
+            expiryInput.value = expiry;
+        } else {
+            expiryInput.value = '';
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    }
+
+    function openConnectModal(username) {
+        const host = window.location.protocol + '//' + window.location.hostname;
+        const origin = window.location.origin;
+
+        const m3u = `${origin}/get.php?username=${username}&password=PASSWORD&type=m3u_plus&output=ts`;
+
+        document.getElementById('m3uUrl').value = m3u;
+        document.getElementById('xcHost').value = origin;
+        document.getElementById('xcUser').value = username;
+
+        const modal = new bootstrap.Modal(document.getElementById('connectModal'));
+        modal.show();
+    }
+
+    function copyToClipboard(elementId) {
+        const copyText = document.getElementById(elementId);
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+    }
+</script>
+{% endblock %}

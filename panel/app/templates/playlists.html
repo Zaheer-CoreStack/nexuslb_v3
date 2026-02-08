@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-light"><i class="fas fa-list-alt me-2 text-primary"></i> Playlist Management</h2>
+        <button class="btn btn-primary shadow" data-bs-toggle="modal" data-bs-target="#addPlaylistModal">
+            <i class="fas fa-plus me-2"></i> Add Playlist
+        </button>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Name</th>
+                            <th>Backend URL</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for playlist in playlists %}
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <i class="fas fa-play-circle text-primary me-2"></i> {{ playlist.name }}
+                            </td>
+                            <td>
+                                <code class="text-muted"
+                                    style="max-width: 300px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    {{ playlist.url }}
+                                </code>
+                            </td>
+                            <td>
+                                {% if playlist.status == 'active' %}
+                                <span
+                                    class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                                    <span class="status-dot status-active"></span> Active
+                                </span>
+                                {% else %}
+                                <span
+                                    class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-2 rounded-pill">
+                                    <span class="status-dot status-inactive"></span> Disabled
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td><small class="text-muted">{{ playlist.notes or '-' }}</small></td>
+                            <td class="text-end pe-4">
+                                <form action="{{ url_for('playlists.toggle_status', id=playlist.id) }}" method="POST"
+                                    class="d-inline">
+                                    <button
+                                        class="btn btn-sm btn-outline-{{ 'warning' if playlist.status == 'active' else 'secondary' }} me-1"
+                                        title="{{ 'Disable' if playlist.status == 'active' else 'Enable' }}">
+                                        <i class="fas fa-{{ 'pause' if playlist.status == 'active' else 'play' }}"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('playlists.delete_playlist', id=playlist.id) }}" method="POST"
+                                    class="d-inline" onsubmit="return confirm('Delete playlist {{playlist.name}}?');">
+                                    <button class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fas fa-folder-open fa-3x mb-3 opacity-50"></i>
+                                <p class="mb-0">No playlists found. Add your first M3U source!</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Playlist Modal -->
+<div class="modal fade" id="addPlaylistModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border-secondary text-white">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title"><i class="fas fa-plus-circle me-2 text-primary"></i> Add New Playlist</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('playlists.add_playlist') }}" method="POST">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Provider Name</label>
+                        <input type="text" name="name" class="form-control" required
+                            placeholder="e.g. My IPTV Provider">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">M3U / Xtream URL</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i
+                                    class="fas fa-link"></i></span>
+                            <input type="text" name="url" class="form-control" required
+                                placeholder="http://domain.com/get.php?username=...">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small text-uppercase fw-bold">Username (Opt)</label>
+                            <input type="text" name="username" class="form-control" placeholder="If not in URL">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small text-uppercase fw-bold">Password (Opt)</label>
+                            <input type="text" name="password" class="form-control" placeholder="If not in URL">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Notes</label>
+                        <textarea name="notes" class="form-control" rows="2"
+                            placeholder="e.g. Expires next month"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Add Playlist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-network-wired me-2 text-primary"></i> Proxy Manager</h2>
+    <div>
+        <form action="{{ url_for('proxy.restart_proxy') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-warning"
+                onclick="return confirm('Restarting the proxy will interrupt active streams. Continue?')">
+                <i class="fas fa-sync-alt me-1"></i> Restart Proxy
+            </button>
+        </form>
+        <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#addRouteModal">
+            <i class="fas fa-plus me-1"></i> Add Route
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="alert alert-info m-3">
+            <i class="fas fa-info-circle me-2"></i> Only routes explicitly defined in <code>docker-compose.yml</code>
+            are shown here.
+        </div>
+
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Pattern <small class="text-muted">(Domain/URL)</small></th>
+                    <th>Proxy URL</th>
+                    <th>SSL Verification</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pattern, config in routes.items() %}
+                <tr>
+                    <td><code>{{ pattern }}</code></td>
+                    <td>
+                        {% if config.proxy_url %}
+                        <span class="badge bg-primary text-dark">{{ config.proxy_url }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Default</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if config.verify_ssl %}
+                        <i class="fas fa-check-circle text-success"></i> Enabled
+                        {% else %}
+                        <i class="fas fa-times-circle text-danger"></i> Disabled
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <form action="{{ url_for('proxy.delete_route') }}" method="POST" class="d-inline"
+                            onsubmit="return confirm('Delete route for {{ pattern }}?');">
+                            <input type="hidden" name="pattern" value="{{ pattern }}">
+                            <button class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">No custom routes configured.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Route Modal -->
+<div class="modal fade" id="addRouteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">New Proxy Route</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('proxy.add_route') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Pattern</label>
+                        <input type="text" name="pattern" class="form-control" placeholder="e.g. all://*.example.com"
+                            required>
+                        <small class="text-muted">Supports <code>http://domain</code>, <code>all://wildcard</code>,
+                            etc.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label>Proxy URL (Optional)</label>
+                        <input type="text" name="proxy_url" class="form-control"
+                            placeholder="socks5://user:pass@host:1080">
+                        <small class="text-muted">Leave empty to use main proxy or disable proxy for this route.</small>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="verify_ssl" id="verify_ssl" checked>
+                        <label class="form-check-label" for="verify_ssl">Verify SSL Certificates</label>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Route</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

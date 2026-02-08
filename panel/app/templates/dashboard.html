@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="fade-in">
+    <h2 class="mb-4 text-light"><i class="fas fa-tachometer-alt me-2 text-primary"></i>System Overview</h2>
+
+    <div class="row g-4 mb-4">
+        <!-- CPU Usage -->
+        <div class="col-md-4">
+            <div class="glass-card text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-microchip fa-3x text-primary opacity-75"></i>
+                </div>
+                <h5 class="text-muted text-uppercase fs-6 ls-1">CPU Usage</h5>
+                <h2 class="display-4 fw-bold text-white mb-3">{{ cpu_usage }}<small class="fs-4">%</small></h2>
+                <div class="progress bg-dark" style="height: 6px;">
+                    <div class="progress-bar bg-primary" role="progressbar"
+                        style="width: {{ cpu_usage }}%; box-shadow: 0 0 10px var(--primary-color);"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Memory Usage -->
+        <div class="col-md-4">
+            <div class="glass-card text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-memory fa-3x text-info opacity-75"></i>
+                </div>
+                <h5 class="text-muted text-uppercase fs-6 ls-1">Memory Usage</h5>
+                <h2 class="display-4 fw-bold text-white mb-3">{{ memory_usage }}<small class="fs-4">%</small></h2>
+                <div class="progress bg-dark" style="height: 6px;">
+                    <div class="progress-bar bg-info" role="progressbar"
+                        style="width: {{ memory_usage }}%; box-shadow: 0 0 10px #0dcaf0;"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Disk Usage -->
+        <div class="col-md-4">
+            <div class="glass-card text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-hdd fa-3x text-secondary opacity-75"></i>
+                </div>
+                <h5 class="text-muted text-uppercase fs-6 ls-1">Disk Usage</h5>
+                <h2 class="display-4 fw-bold text-white mb-3">{{ disk_usage }}<small class="fs-4">%</small></h2>
+                <div class="progress bg-dark" style="height: 6px;">
+                    <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ disk_usage }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="glass-card h-100">
+                <div class="card-header">
+                    <i class="fas fa-server me-2"></i> System Information
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless text-white mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted w-25">Hostname</td>
+                                    <td class="fw-bold">{{ system_info.node }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">OS</td>
+                                    <td><i class="fab fa-linux me-2"></i> {{ system_info.os }} {{ system_info.release }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Architecture</td>
+                                    <td>{{ system_info.machine if system_info.machine else 'x86_64' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Python Version</td>
+                                    <td>{{ system_info.python_version if system_info.python_version else '3.9' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="glass-card h-100">
+                <div class="card-header">
+                    <i class="fas fa-cogs me-2"></i> Quick Actions
+                </div>
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <!-- <p class="text-muted small mb-3 text-center">Service Management</p> -->
+                    <button class="btn btn-outline-warning w-100 mb-3 py-2">
+                        <i class="fas fa-sync-alt me-2"></i> Reload Nginx
+                    </button>
+                    <a href="{{ url_for('proxy.index') }}" class="btn btn-primary w-100 py-2">
+                        <i class="fas fa-network-wired me-2"></i> Manage Proxies
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
