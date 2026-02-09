@@ -70,13 +70,11 @@ class WebshareService:
         total_synced = 0
         
         # Clear existing pool to respect daily rotations/replacements
-        # In a more advanced version, we might want to check status before deleting
         db.session.query(ProxyPool).delete()
         
         for key in keys:
             proxies = WebshareService.fetch_proxies_from_key(key)
             for p in proxies:
-                # Webshare returns: username, password, proxy_address, port, country_code, etc.
                 if p.get('valid'):
                     new_proxy = ProxyPool(
                         ip=p.get('proxy_address'),
@@ -84,7 +82,7 @@ class WebshareService:
                         username=p.get('username'),
                         password=p.get('password'),
                         country_code=p.get('country_code'),
-                        protocol='socks5', # Webshare supports HTTP/SOCKS5 usually on same port or different. default to socks5
+                        protocol='socks5',
                         status='active'
                     )
                     db.session.add(new_proxy)
