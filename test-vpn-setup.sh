@@ -16,12 +16,13 @@ test_vpn_connection() {
     echo "----------------------"
     
     # Check if running in Codespaces/local environment
-    if [ -f "/.dockerenv" ] || grep -q "codespaces" /proc/1/cgroup 2>/dev/null; then
-        echo "⚠ Running in container/Codespaces - VPN not applicable"
-        echo "  VPN will be configured when deployed to Azure VM"
-        ((PASS++))
-        return
-    fi
+    # Check if running in Codespaces/local environment
+    # if [ -f "/.dockerenv" ] || grep -q "codespaces" /proc/1/cgroup 2>/dev/null; then
+    #     echo "⚠ Running in container/Codespaces - VPN not applicable"
+    #     echo "  VPN will be configured when deployed to Azure VM"
+    #     ((PASS++))
+    #     return
+    # fi
     
     if pgrep -f "openvpn.*protonvpn" > /dev/null; then
         echo "✓ VPN process is running"

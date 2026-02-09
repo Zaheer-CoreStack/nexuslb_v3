@@ -33,23 +33,27 @@ cd /etc/openvpn/protonvpn
 # Note: You may need to manually download these from Proton VPN website
 # https://protonvpn.com/free-vpn
 echo "Downloading Netherlands free config..."
-wget -q "https://protonvpn.net/download/config/nl-free.opvn" -O nl-free.ovpn || {
+wget -q "https://protonvpn.com/download/config/nl-free.ovpn" -O nl-free.ovpn || {
     echo "Failed to download. Please manually download from:"
     echo "https://protonvpn.com/free-vpn"
 }
 
 echo "Downloading US free config..."
-wget -q "https://protonvpn.net/download/config/us-free.opvn" -O us-free.ovpn || echo "US config download failed"
+wget -q "https://protonvpn.com/download/config/us-free.ovpn" -O us-free.ovpn || echo "US config download failed"
 
 echo "Downloading Japan free config..."
-wget -q "https://protonvpn.net/download/config/jp-free.opvn" -O jp-free.ovpn || echo "Japan config download failed"
+wget -q "https://protonvpn.com/download/config/jp-free.ovpn" -O jp-free.ovpn || echo "Japan config download failed"
 
 # Step 3: Create credentials file
 echo ""
 echo "[3/6] Setting up credentials..."
 
-read -p "Enter Proton VPN username: " VPN_USER
-read -s -p "Enter Proton VPN password: " VPN_PASS
+if [ -z "$VPN_USER" ]; then
+    read -p "Enter Proton VPN username: " VPN_USER
+fi
+if [ -z "$VPN_PASS" ]; then
+    read -s -p "Enter Proton VPN password: " VPN_PASS
+fi
 echo ""
 
 # Create auth file
