@@ -4,45 +4,45 @@ services:
     container_name: mfp
     restart: unless-stopped
     ports:
-    - 8888:8888
+      - 8888:8888
     environment:
       API_PASSWORD: mfp
       FORWARDED_ALLOW_IPS: '*'
 
     volumes:
-    - ./mfp_config.env:/mediaflow_proxy/.env:rw
+      - ./mfp_config.env:/mediaflow_proxy/.env:rw
     networks:
-    - nexuslb-network
+      - nexuslb-network
   lb:
     image: nginx:alpine
     container_name: lb
     ports:
-    - 80:80
-    - 443:443
-    - 8080:8080
+      - 80:80
+      - 443:443
+      - 8080:8080
     volumes:
-    - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    - ./.htpasswd:/etc/nginx/.htpasswd:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./.htpasswd:/etc/nginx/.htpasswd:ro
     depends_on:
-    - mfp
-    - panel
+      - mfp
+      - panel
     networks:
-    - nexuslb-network
+      - nexuslb-network
   panel:
     build: ./panel
     container_name: panel
     restart: unless-stopped
     volumes:
-    - ./.htpasswd:/auth/.htpasswd
-    - panel-db:/instance
-    - /var/run/docker.sock:/var/run/docker.sock
-    - ./docker-compose.yml:/config/docker-compose.yml
-    - ./mfp_config.env:/config/mfp_config.env:rw
+      - ./.htpasswd:/auth/.htpasswd
+      - panel-db:/instance
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.yml:/config/docker-compose.yml
+      - ./mfp_config.env:/config/mfp_config.env:rw
     environment:
-    - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
-    - HTPASSWD_FILE=/auth/.htpasswd
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - HTPASSWD_FILE=/auth/.htpasswd
     networks:
-    - nexuslb-network
+      - nexuslb-network
 volumes:
   panel-db:
     driver: local

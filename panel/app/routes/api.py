@@ -1,6 +1,5 @@
 from flask import Blueprint, request, Response, stream_with_context, abort
 from ..models import StreamUser, Playlist, ProxyPool
-from ..services.webshare import WebshareService
 from .. import db
 import requests
 import base64

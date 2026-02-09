@@ -15,82 +15,6 @@
     </div>
 </div>
 
-<!-- Webshare Dashboard -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card h-100 border-primary">
-            <div class="card-header bg-transparent border-primary d-flex justify-content-between">
-                <h5 class="mb-0 text-primary"><i class="fas fa-globe me-2"></i>Webshare Pool</h5>
-                <form action="{{ url_for('proxy.sync_proxies') }}" method="POST">
-                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-sync"></i> Sync</button>
-                </form>
-            </div>
-            <div class="card-body">
-                <div class="d-flex justify-content-between text-center mb-3">
-                    <div>
-                        <h3>{{ total_proxies }}</h3>
-                        <small class="text-muted">Total</small>
-                    </div>
-                    <div>
-                        <h3 class="text-success">{{ active_proxies }}</h3>
-                        <small class="text-muted">Active</small>
-                    </div>
-                    <div>
-                        <h3 class="text-danger">{{ total_proxies - active_proxies }}</h3>
-                        <small class="text-muted">Dead</small>
-                    </div>
-                </div>
-                <hr>
-                <h6>Region Distribution</h6>
-                <div style="max-height: 100px; overflow-y: auto;">
-                    {% for country, count in country_stats %}
-                    <div class="d-flex justify-content-between small">
-                        <span><img src="https://flagcdn.com/16x12/{{ country|lower }}.png" alt="{{ country }}"> {{
-                            country }}</span>
-                        <span class="badge bg-secondary">{{ count }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-8">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-key me-2"></i>API Keys</h5>
-            </div>
-            <div class="card-body">
-                <form action="{{ url_for('proxy.manage_keys') }}" method="POST" class="row g-2 mb-3">
-                    <input type="hidden" name="action" value="add">
-                    <div class="col-auto flex-grow-1">
-                        <input type="text" name="key" class="form-control" placeholder="Enter Webshare API Key"
-                            required>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Add Key</button>
-                    </div>
-                </form>
-
-                <div class="list-group">
-                    {% for key in api_keys %}
-                    <div
-                        class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
-                        <small class="text-monospace">{{ key[:10] }}...{{ key[-5:] }}</small>
-                        <form action="{{ url_for('proxy.manage_keys') }}" method="POST">
-                            <input type="hidden" name="action" value="remove">
-                            <input type="hidden" name="key" value="{{ key }}">
-                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                        </form>
-                    </div>
-                    {% else %}
-                    <div class="text-center text-muted py-2">No API keys configured.</div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -167,70 +91,24 @@
                             required>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Proxy Configuration</label>
-                        <div class="input-group">
-                            <input type="text" name="proxy_url" id="proxyUrlInput" class="form-control"
-                                placeholder="socks5://...">
-                            <button class="btn btn-outline-info" type="button" id="fetchProxyBtn"
-                                onclick="fetchBestProxy()">
-                                <i class="fas fa-magic me-1"></i> Auto-Fill from Webshare
-                            </button>
-                        </div>
-                        <div id="proxyFeedback" class="form-text"></div>
+                    <div class="input-group">
+                        <input type="text" name="proxy_url" id="proxyUrlInput" class="form-control"
+                            placeholder="socks5://...">
                     </div>
-
-                    <div class="mb-3">
-                        <label>Prefer Region (for Auto-Fill)</label>
-                        <select id="regionSelect" class="form-select">
-                            <option value="">Best Available (Recommended)</option>
-                            <option value="GB">United Kingdom (GB)</option>
-                            <option value="US">United States (US)</option>
-                            <option value="DE">Germany (DE)</option>
-                            <option value="FR">France (FR)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" name="verify_ssl" id="verify_ssl" checked>
-                        <label class="form-check-label" for="verify_ssl">Verify SSL Certificates</label>
-                    </div>
+                    <div class="form-text">Enter full proxy URL</div>
                 </div>
-                <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Route</button>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="verify_ssl" id="verify_ssl" checked>
+                    <label class="form-check-label" for="verify_ssl">Verify SSL Certificates</label>
                 </div>
-            </form>
         </div>
+        <div class="modal-footer border-secondary">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Route</button>
+        </div>
+        </form>
     </div>
 </div>
-
-<script>
-    function fetchBestProxy() {
-        const country = document.getElementById('regionSelect').value;
-        const btn = document.getElementById('fetchProxyBtn');
-        const input = document.getElementById('proxyUrlInput');
-        const feedback = document.getElementById('proxyFeedback');
-
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
-
-        fetch(`{{ url_for('proxy.get_best_proxy') }}?country=${country}`)
-            .then(response => {
-                if (!response.ok) throw new Error("No proxy found");
-                return response.json();
-            })
-            .then(data => {
-                input.value = data.url;
-                feedback.innerHTML = `<span class="text-success"><i class="fas fa-check"></i> Found active proxy in <strong>${data.country}</strong></span>`;
-            })
-            .catch(err => {
-                feedback.innerHTML = `<span class="text-danger"><i class="fas fa-times"></i> ${err.message}. Try syncing first?</span>`;
-            })
-            .finally(() => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-magic me-1"></i> Auto-Fill from Webshare';
-            });
-    }
-</script>
-{% endblock %}
+</div>
+{% endblock %}{% endblock %}
