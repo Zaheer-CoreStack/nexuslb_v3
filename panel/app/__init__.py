@@ -60,17 +60,26 @@ def create_app():
     
     from .services.webshare import WebshareService
 
-    @scheduler.task('interval', id='sync_webshare_proxies', hours=24)
-    def active_proxy_sync():
+    def run_proxy_sync():
+        """Sync proxies from Webshare"""
+        try:
+            logger = __import__('logging').getLogger(__name__)
+            count = WebshareService.sync_proxies()
+            logger.info(f"Proxy sync completed: {count} proxies")
+        except Exception as e:
+            logger = __import__('logging').getLogger(__name__)
+            logger.error(f"Proxy sync error: {e}")
+
+    # Schedule proxy sync every 6 hours
+    @scheduler.task('interval', id='sync_webshare_proxies', hours=6)
+    def scheduled_proxy_sync():
         with app.app_context():
-            try:
-                # Sync logic here
-                print("Running daily proxy sync...")
-                WebshareService.sync_proxies()
-                print("Daily proxy sync completed.")
-            except Exception as e:
-                print(f"Error in daily proxy sync: {e}")
+            run_proxy_sync()
 
     scheduler.start()
+    
+    # Run initial sync on startup
+    with app.app_context():
+        run_proxy_sync()
 
     return app

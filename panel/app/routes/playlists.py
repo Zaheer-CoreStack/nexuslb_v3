@@ -53,3 +53,19 @@ def toggle_status(id):
     db.session.commit()
     flash(f"Playlist {playlist.name} is now {playlist.status}", 'success')
     return redirect(url_for('playlists.index'))
+
+
+@playlists_bp.route('/client-playlist')
+def client_playlist():
+    """
+    Client-facing playlist browser with categories.
+    Shows Live TV, Movies, Series grouped by category.
+    """
+    username = request.args.get('username')
+    password = request.args.get('password')
+    category = request.args.get('category')
+    
+    return render_template('client_playlist.html', 
+                         username=username,
+                         password=password,
+                         category=category)

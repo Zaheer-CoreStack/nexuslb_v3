@@ -29,6 +29,9 @@
             class="{{ 'active' if request.endpoint == 'playlists.index' else '' }}">
             <i class="fas fa-list-alt me-2"></i> Playlists
         </a>
+        <a href="/panel/client-playlist" target="_blank" class="{{ 'active' if 'client-playlist' in request.path else '' }}">
+            <i class="fas fa-tv me-2"></i> Client Playlist
+        </a>
         <a href="#" class="disabled"><i class="fas fa-file-alt me-2"></i> Logs</a>
 
         <div class="mt-auto pt-5 text-center">

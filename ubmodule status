@@ -1,0 +1,39 @@
+[33mcommit 537d602d5f5dcfcf8b6e7db5936036eecb855d04[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: EventsCo <contact@eventsco.com>
+Date:   Sun Feb 8 21:55:02 2026 +0000
+
+    Fix proxy configuration persistence: use mounted mfp_config.env
+
+[33mcommit 4828a9ce3b8790369e2496cec8e43af614b8d98e[m
+Author: EventsCo <contact@eventsco.com>
+Date:   Sun Feb 8 17:12:48 2026 +0000
+
+    feat: Implement a new web-based administration panel for managing users, proxy routes, and playlists, with Docker integration.
+
+[33mcommit b2c3a7e1a517293c5e7c3dda5715ff9ec497a878[m
+Author: CoreStack <support@core-stack.tech>
+Date:   Sun Feb 8 05:20:09 2026 +0000
+
+    Update subproject commit reference in XC_VM
+
+[33mcommit a209692d1667efe641b11d899da4a9f79f156007[m
+Author: CoreStack <support@core-stack.tech>
+Date:   Sun Feb 8 05:19:14 2026 +0000
+
+    Add initial implementation of NexusLB v3 with Nginx load balancer and MediaFlow Proxy
+    
+    - Created README.md with project overview and setup instructions
+    - Added .htpasswd for user authentication
+    - Implemented setup guide in SETUP.md
+    - Configured docker-compose.yml for service orchestration
+    - Developed nginx.conf for load balancing and proxying
+    - Created panel with user management features using Flask
+    - Added automated testing script test-setup.sh
+    - Included HTML templates for login and dashboard
+    - Defined requirements in requirements.txt
+
+[33mcommit 76c05fd8c1a1bd4a3c2b015e9ebb15c73b379407[m
+Author: CoreStack <support@core-stack.tech>
+Date:   Sat Feb 7 15:58:51 2026 +0000
+
+    Initial commit
