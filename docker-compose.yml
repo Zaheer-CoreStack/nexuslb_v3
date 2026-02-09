@@ -3,14 +3,29 @@ services:
     build: ./mediaflow-proxy
     container_name: mfp
     restart: unless-stopped
-    ports:
-      - 8888:8888
-    environment:
-      API_PASSWORD: mfp
-      FORWARDED_ALLOW_IPS: '*'
-
+    network_mode: "service:vpn"
+    depends_on:
+      - vpn
     volumes:
       - ./mfp_config.env:/mediaflow_proxy/.env:rw
+  vpn:
+    image: qmcgaw/gluetun:latest
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 8888:8888 # Expose MFP port through VPN container
+    volumes:
+      - ./gluetun:/gluetun
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - SERVER_COUNTRIES=Netherlands
+      - FIREWALL_VPN_INPUT_PORTS=8888
+    restart: always
     networks:
       - nexuslb-network
   lb:

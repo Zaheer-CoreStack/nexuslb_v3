@@ -1,0 +1,33 @@
+{
+    "name": "NexusLB v3",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "panel",
+    "workspaceFolder": "/workspace",
+    "forwardPorts": [
+        80,
+        5000,
+        8888
+    ],
+    "portsAttributes": {
+        "80": {
+            "label": "Nginx Load Balancer",
+            "onAutoForward": "notify"
+        },
+        "5000": {
+            "label": "Panel UI",
+            "onAutoForward": "notify"
+        },
+        "8888": {
+            "label": "MediaFlow Proxy",
+            "onAutoForward": "notify"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    }
+}
