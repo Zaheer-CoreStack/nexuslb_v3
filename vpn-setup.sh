@@ -32,17 +32,25 @@ cd /etc/openvpn/protonvpn
 # Download free server configurations
 # Note: You may need to manually download these from Proton VPN website
 # https://protonvpn.com/free-vpn
-echo "Downloading Netherlands free config..."
-wget -q "https://protonvpn.com/download/config/nl-free.ovpn" -O nl-free.ovpn || {
-    echo "Failed to download. Please manually download from:"
-    echo "https://protonvpn.com/free-vpn"
-}
+# Check for local custom config first
+if [ -f "proton_custom.ovpn" ]; then
+    echo "Found local proton_custom.ovpn, using it..."
+    cp proton_custom.ovpn nl-free.ovpn
+    cp proton_custom.ovpn us-free.ovpn
+    cp proton_custom.ovpn jp-free.ovpn
+else
+    echo "Downloading Netherlands free config..."
+    wget -q "https://protonvpn.com/download/config/nl-free.ovpn" -O nl-free.ovpn || {
+        echo "Failed to download. Please manually download from:"
+        echo "https://protonvpn.com/free-vpn"
+    }
 
-echo "Downloading US free config..."
-wget -q "https://protonvpn.com/download/config/us-free.ovpn" -O us-free.ovpn || echo "US config download failed"
+    echo "Downloading US free config..."
+    wget -q "https://protonvpn.com/download/config/us-free.ovpn" -O us-free.ovpn || echo "US config download failed"
 
-echo "Downloading Japan free config..."
-wget -q "https://protonvpn.com/download/config/jp-free.ovpn" -O jp-free.ovpn || echo "Japan config download failed"
+    echo "Downloading Japan free config..."
+    wget -q "https://protonvpn.com/download/config/jp-free.ovpn" -O jp-free.ovpn || echo "Japan config download failed"
+fi
 
 # Step 3: Create credentials file
 echo ""
