@@ -37,6 +37,9 @@ def create_app():
     from .routes.playlists import playlists_bp
     app.register_blueprint(playlists_bp, url_prefix='/panel')
 
+    from .routes.api import api_bp
+    app.register_blueprint(api_bp, url_prefix='/') # Root prefix for get.php
+
     with app.app_context():
         db.create_all()
         # Create default admin if not exists
